@@ -17,9 +17,21 @@ inputs:
   image:
     description: Kernel image name
     required: true
+  dtbo:
+    description: need dtbo or not
+    required: true
+  dtb:
+    description: need dtb or not
+    required: true
 outputs:
   outfile:
     description: Zip file generated from build
+  image:
+    description: generated kernel image
+  dtbo:
+    description: generated dtbo
+  dtb:
+    description: generated dtb
 runs:
   using: docker
   image: Dockerfile
