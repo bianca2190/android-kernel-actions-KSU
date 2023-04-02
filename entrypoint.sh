@@ -27,6 +27,7 @@ compiler="$2"
 defconfig="$3"
 image="$4"
 dtbo="$5"
+dtb="$6"
 repo_name="${GITHUB_REPOSITORY/*\/}"
 zipper_path="${ZIPPER_PATH:-zipper}"
 kernel_path="${KERNEL_PATH:-.}"
@@ -226,6 +227,10 @@ if [[ -e "$workdir"/"$zipper_path" ]]; then
         cp out/arch/"$arch"/boot/dtbo.img "$workdir"/"$zipper_path"/dtbo.img
     fi
 
+    if [ "$dtb" = true ]; then
+        cp out/arch/"$arch"/boot/dtb "$workdir"/"$zipper_path"/dtb
+    fi
+
     cd "$workdir"/"$zipper_path" || exit 127
     rm -rf .git
     zip -r9 "$zip_filename" . -x .gitignore README.md || exit 127
@@ -239,6 +244,10 @@ else
     if [ "$dtbo" = true ]; then
         set_output dtbo out/arch/"$arch"/boot/dtbo.img
     fi
-    
+
+    if [ "$dtb" = true ]; then
+        set_output dtb out/arch/"$arch"/boot/dtb
+    fi
+
     exit 0
 fi

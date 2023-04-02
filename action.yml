@@ -29,3 +29,4 @@ runs:
     - ${{ inputs.defconfig }}
     - ${{ inputs.image }}
     - ${{ inputs.dtbo }}
+    - ${{ inputs.dtb }}
