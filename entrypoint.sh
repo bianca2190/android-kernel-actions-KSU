@@ -26,6 +26,7 @@ arch="$1"
 compiler="$2"
 defconfig="$3"
 image="$4"
+dtbo="$5"
 repo_name="${GITHUB_REPOSITORY/*\/}"
 zipper_path="${ZIPPER_PATH:-zipper}"
 kernel_path="${KERNEL_PATH:-.}"
@@ -220,7 +221,11 @@ msg "Packaging the kernel..."
 zip_filename="${name}-${tag}-${date}.zip"
 if [[ -e "$workdir"/"$zipper_path" ]]; then
     cp out/arch/"$arch"/boot/"$image" "$workdir"/"$zipper_path"/"$image"
-    cp out/arch/"$arch"/boot/dtbo.img "$workdir"/"$zipper_path"/dtbo.img
+
+    if [ "$dtbo" = true ]; then
+        cp out/arch/"$arch"/boot/dtbo.img "$workdir"/"$zipper_path"/dtbo.img
+    fi
+
     cd "$workdir"/"$zipper_path" || exit 127
     rm -rf .git
     zip -r9 "$zip_filename" . -x .gitignore README.md || exit 127
@@ -229,6 +234,11 @@ if [[ -e "$workdir"/"$zipper_path" ]]; then
     exit 0
 else
     msg "No zip template provided, releasing the kernel image instead"
-    set_output outfile out/arch/"$arch"/boot/"$image"
+    set_output image out/arch/"$arch"/boot/"$image"
+
+    if [ "$dtbo" = true ]; then
+        set_output dtbo out/arch/"$arch"/boot/dtbo.img
+    fi
+    
     exit 0
 fi

@@ -28,3 +28,4 @@ runs:
     - ${{ inputs.compiler }}
     - ${{ inputs.defconfig }}
     - ${{ inputs.image }}
+    - ${{ inputs.dtbo }}
