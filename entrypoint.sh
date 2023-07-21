@@ -233,6 +233,7 @@ cd "$workdir"/"$kernel_path" || exit 127
 start_time="$(date +%s)"
 date="$(date +%d%m%Y-%I%M)"
 tag="$(git branch | sed 's/*\ //g')"
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
 echo "branch/tag: $tag"
 echo "make options:" $arch_opts $make_opts $host_make_opts
 msg "Generating defconfig from \`make $defconfig\`..."
@@ -242,7 +243,7 @@ if ! make O=out $arch_opts $make_opts $host_make_opts "$defconfig"; then
 fi
 msg "Begin building kernel..."
 
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main && curl -fsSL "https://raw.githubusercontent.com/bianca2190/android-kernel-actions-KSU/neutron/prompt-ksu.sh" | bash -s
+make O=out $arch_opts $make_opts $host_make_opts -j"$(nproc --all)" prepare
 
 if ! make O=out $arch_opts $make_opts $host_make_opts -j"$(nproc --all)"; then
     err "Failed building kernel, probably the toolchain is not compatible with the kernel, or kernel source problem"
@@ -259,7 +260,7 @@ if [[ -e "$workdir"/"$zipper_path" ]]; then
     fi
 
     if [ "$dtb" = true ]; then
-        cp out/arch/"$arch"/boot/dtb "$workdir"/"$zipper_path"/dtb
+        cp out/arch/"$arch"/boot/dtb.img "$workdir"/"$zipper_path"/dtb.img
     fi
 
     cd "$workdir"/"$zipper_path" || exit 127
@@ -277,7 +278,7 @@ else
     fi
 
     if [ "$dtb" = true ]; then
-        set_output dtb out/arch/"$arch"/boot/dtb
+        set_output dtb out/arch/"$arch"/boot/dtb.img
     fi
 
     exit 0
