@@ -168,7 +168,7 @@ if [[ $arch = "arm64" ]]; then
     elif [[ $compiler = aosp-clang/* ]]; then
         ver="${compiler/aosp-clang\/}"
         ver_number="${ver/\/binutils}"
-        url="https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${ver_number}.tar.gz"
+        url="https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/${ver_number}.tar.gz"
         binutils="$([[ $ver = */binutils ]] && echo true || echo false)"
 
         echo "Downloading $url"
