@@ -233,7 +233,7 @@ cd "$workdir"/"$kernel_path" || exit 127
 start_time="$(date +%s)"
 date="$(date +%d%m%Y-%I%M)"
 tag="$(git branch | sed 's/*\ //g')"
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.6.2
 echo "branch/tag: $tag"
 echo "make options:" $arch_opts $make_opts $host_make_opts
 msg "Generating defconfig from \`make $defconfig\`..."
