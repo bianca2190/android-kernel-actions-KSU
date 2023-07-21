@@ -242,6 +242,7 @@ if ! make O=out $arch_opts $make_opts $host_make_opts "$defconfig"; then
 fi
 msg "Begin building kernel..."
 
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
 make O=out $arch_opts $make_opts $host_make_opts -j"$(nproc --all)" prepare
 
 if ! make O=out $arch_opts $make_opts $host_make_opts -j"$(nproc --all)"; then
