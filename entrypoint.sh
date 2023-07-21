@@ -175,19 +175,19 @@ if [[ $arch = "arm64" ]]; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
         fi
-        url="https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/961622e926a1b21382dba4dd9fe0e5fb3ee5ab7c.tar.gz"
+        url="https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/heads/master-kernel-build-2021.tar.gz"
         echo "Downloading $url"
         if ! wget --no-check-certificate "$url" -O /tmp/aosp-gcc-arm64.tar.gz &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
         fi
-        url="https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/cb7b3ac1b7fdb49474ff68761909934d1142f594.tar.gz"
+        url="https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/heads/master-kernel-build-2021.tar.gz"
         echo "Downloading $url"
         if ! wget --no-check-certificate "$url" -O /tmp/aosp-gcc-arm.tar.gz &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
         fi
-        url="https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8/+archive/007101a451907c5369db5002ddf7b14dcefb7864.tar.gz"
+        url="https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8/+archive/refs/heads/master-kernel-build-2021.tar.gz"
         echo "Downloading $url"
         if ! wget --no-check-certificate "$url" -O /tmp/aosp-gcc-host.tar.gz &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
@@ -200,7 +200,7 @@ if [[ $arch = "arm64" ]]; then
         extract_tarball /tmp/aosp-gcc-arm.tar.gz /aosp-gcc-arm
         extract_tarball /tmp/aosp-gcc-host.tar.gz /aosp-gcc-host
 
-        for i in /aosp-gcc-host/x86_64-linux-*; do
+        for i in /aosp-gcc-host/bin/x86_64-linux-*; do
             ln -sf "$i" "${i/x86_64-linux-}"
         done
 
