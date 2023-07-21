@@ -38,7 +38,7 @@ msg "Updating container..."
 pacman -Syu --noconfirm
 msg "Installing essential packages..."
 pacman -Sy --noconfirm kmod libelf-dev libssl-dev libtfm-dev \
-    device-tree-compiler ca-certificates xz-utils
+    device-tree-compiler ca-certificates xz-utils expect
 
 set_output hash "$(cd "$kernel_path" && git rev-parse HEAD || exit 127)"
 msg "Installing toolchain..."
