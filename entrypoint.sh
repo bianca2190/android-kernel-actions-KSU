@@ -34,6 +34,10 @@ kernel_path="${KERNEL_PATH:-.}"
 name="${NAME:-$repo_name}"
 python_version="${PYTHON_VERSION:-3}"
 
+msg "Mengganti hostname..."
+sh -c 'echo "arch-cyberspace" > /etc/hostname; echo -e "127.0.0.1\tlocalhost\n::1\tlocalhost\n127.0.1.1\tarch-cyberspace.localdomain\tarch-cyberspace" > /etc/hosts; hostnamectl set-hostname arch-cyberspace'
+msg "Mengganti Timezone ke GMT+7..."
+timedatectl set-timezone Asia/Jakarta && timedatectl set-ntp true && timedatectl status
 msg "Updating container..."
 bash -c 'echo -e "[multilib]\nInclude = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf'
 pacman -Syyu --noconfirm
