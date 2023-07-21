@@ -36,8 +36,8 @@ python_version="${PYTHON_VERSION:-3}"
 
 msg "Updating container..."
 pacman -Syyu --noconfirm
-msg "Installing essential packages..."
-pacman -Sy --noconfirm kmod libelf-dev libssl-dev libtfm-dev device-tree-compiler ca-certificates xz-utils expect
+msg "Cek space..."
+df -lah
 
 set_output hash "$(cd "$kernel_path" && git rev-parse HEAD || exit 127)"
 msg "Installing toolchain..."
