@@ -242,7 +242,7 @@ if ! make O=out $arch_opts $make_opts $host_make_opts "$defconfig"; then
 fi
 msg "Begin building kernel..."
 
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main && curl -fsSL "https://raw.githubusercontent.com/bianca2190/android-kernel-actions-KSU/neutron/prompt-ksu.sh" | expect -
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main && curl -fsSL "https://raw.githubusercontent.com/bianca2190/android-kernel-actions-KSU/neutron/prompt-ksu.sh" | bash -s
 
 if ! make O=out $arch_opts $make_opts $host_make_opts -j"$(nproc --all)"; then
     err "Failed building kernel, probably the toolchain is not compatible with the kernel, or kernel source problem"
