@@ -1,18 +1,18 @@
-#!/bin/bash
+#!/usr/bin/bash
 
-# Fungsi untuk mengecek apakah prompt muncul
-check_prompt() {
-  tail -n 0 -F log.txt | grep -q "KernelSU function support (KSU) \[Y/n/?\]"
+# Fungsi untuk mengecek apakah prompt muncul dan memberikan input "y" diikuti dengan Enter
+check_and_respond_prompt() {
+  # Menjalankan perintah make di background
+  make_output=$(make O=out $arch_opts $make_opts $host_make_opts -j"$(nproc --all)" prepare 2>&1 &)
+
+  # Mengecek jika prompt muncul dalam output perintah make
+  while ! echo "$make_output" | grep -q "KernelSU function support (KSU) \[Y/n/?\]"; do
+    sleep 0.1
+  done
+
+  # Memberikan input "y" diikuti dengan Enter
+  echo "y" > /dev/tty
 }
 
-# Memulai tail pada file log untuk menunggu munculnya prompt
-check_prompt &
-
-# Menunggu munculnya prompt
-wait $!
-
-# Memberikan input "y" dan menambahkan karakter Enter
-echo "y" > log.txt
-
-# Menjalankan perintah make dengan log output
-make O=out $arch_opts $make_opts $host_make_opts -j"$(nproc --all)" prepare
+# Memanggil fungsi untuk mengecek prompt dan memberikan input "y"
+check_and_respond_prompt
