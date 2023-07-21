@@ -35,14 +35,9 @@ name="${NAME:-$repo_name}"
 python_version="${PYTHON_VERSION:-3}"
 
 msg "Updating container..."
-bash -c 'echo -e "[multilib]\nInclude = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf'
 pacman -Syyu --noconfirm
 msg "Installing essential packages..."
-pacman -Sy --noconfirm base base-devel bc python python-pip jdk8-openjdk perl git gnupg flex bison gperf zip unzip sdl squashfs-tools ncurses libpng zlib libusb libusb-compat readline inetutils schedtool gperf imagemagick lzop pngcrush rsync repo clang llvm lld dtc lz4 libzip jdk11-openjdk jdk17-openjdk go openssl cpio wget curl git
-pacman -Sy --noconfirm gcc-multilib gcc-libs-multilib libtool-multilib lib32-libusb lib32-readline lib32-glibc bash-completion lib32-zlib
 pacman -Sy --noconfirm kmod libelf-dev libssl-dev libtfm-dev device-tree-compiler ca-certificates xz-utils expect
-msg "Info Timezone dan hostname......"
-timedatectl && hostname
 
 set_output hash "$(cd "$kernel_path" && git rev-parse HEAD || exit 127)"
 msg "Installing toolchain..."
