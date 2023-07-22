@@ -1,6 +1,7 @@
 name: Build images archlinux builder
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - 'neutron'
