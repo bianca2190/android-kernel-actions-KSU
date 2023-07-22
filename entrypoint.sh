@@ -213,7 +213,7 @@ if [[ $arch = "arm64" ]]; then
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
 
-        pacman -Sy --noconfirm libgcc || exit 127
+        pacman -Sy --noconfirm gcc-libs || exit 127
 
         export PATH="/aosp-clang/bin:/aosp-gcc-arm64/bin:/aosp-gcc-arm/bin:/aosp-gcc-host/bin:$PATH"
         export CLANG_TRIPLE="aarch64-linux-gnu-"
