@@ -8,7 +8,6 @@ RUN pacman -Sy --noconfirm gcc-multilib gcc-libs-multilib libtool-multilib lib32
 RUN archlinux-java set java-20-openjdk
 ENV TZ=Asia/Jakarta
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-RUN pacman -Rns $(pacman -Qdtq)
 RUN yes | pacman -Scc
 # custom 
 COPY entrypoint.sh /entrypoint.sh
