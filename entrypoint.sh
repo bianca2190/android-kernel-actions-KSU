@@ -84,6 +84,7 @@ if [[ $arch = "arm64" ]]; then
     elif [[ $compiler = zyc-clang/* ]]; then
         ver="${compiler/zyc-clang\/}"
         ver_number="${ver/\/binutils}"
+        url="https://github.com/ZyCromerZ/Clang/releases/download/"${ver_number}"-release/Clang-"${ver_number}".tar.gz"
 
         binutils="$([[ $ver = */binutils ]] && echo true || echo false)"
 
@@ -92,7 +93,7 @@ if [[ $arch = "arm64" ]]; then
 
         echo "Downloading zyc-clang version - $ver_number"
         
-        if ! wget https://github.com/ZyCromerZ/Clang/releases/download/"${ver_number}"-release/Clang-"${ver_number}".tar.gz -O zyc-clang.tar.gz &>/dev/null && tar -zxvf zyc-clang.tar.gz &>/dev/null; then
+        if ! wget --no-check-certificate "$url" -O ./zyc-clang.tar.gz && tar -zxvf ./zyc-clang.tar.gz; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
         fi
