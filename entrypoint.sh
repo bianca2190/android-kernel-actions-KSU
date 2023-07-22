@@ -93,10 +93,11 @@ if [[ $arch = "arm64" ]]; then
 
         echo "Downloading zyc-clang version - $ver_number"
         
-        if ! wget --no-check-certificate "$url" -O ./zyc-clang.tar.gz && tar -zxvf ./zyc-clang.tar.gz; then
+        if ! wget --no-check-certificate "$url" -O /tmp/zyc-clang.tar.gz &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
         fi
+        extract_tarball /tmp/zyc-clang.tar.gz ./
 
         if $binutils; then
             make_opts="CC=clang"
