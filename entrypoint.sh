@@ -28,6 +28,8 @@ defconfig="$3"
 image="$4"
 dtbo="$5"
 dtb="$6"
+kuser="$7"
+khost="$8"
 repo_name="${GITHUB_REPOSITORY/*\/}"
 zipper_path="${ZIPPER_PATH:-zipper}"
 kernel_path="${KERNEL_PATH:-.}"
@@ -46,45 +48,7 @@ if [[ $arch = "arm64" ]]; then
     export ARCH="$arch"
     export SUBARCH="$arch"
 
-    if [[ $compiler = gcc/* ]]; then
-        ver_number="${compiler/gcc\/}"
-        make_opts=""
-        host_make_opts=""
-
-        if ! pacman -Sy --noconfirm gcc aarch64-linux-gnu-gcc arm-linux-gnueabi-gcc; then
-            err "Compiler package not found, refer to the README for details"
-            exit 1
-        fi
-
-        export CROSS_COMPILE="aarch64-linux-gnu-"
-        export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
-    elif [[ $compiler = clang/* ]]; then
-        ver="${compiler/clang\/}"
-        ver_number="${ver/\/binutils}"
-        binutils="$([[ $ver = */binutils ]] && echo true || echo false)"
-        
-        if $binutils; then
-            additional_packages="binutils aarch64-linux-gnu-binutils arm-linux-gnueabi-binutils"
-            make_opts="CC=clang"
-            host_make_opts="HOSTCC=clang HOSTCXX=clang++"
-        else
-            # Most android kernels still need binutils as the assembler, but it will
-            # not be used when the Makefile is patched to make use of LLVM_IAS option
-            additional_packages="aarch64-linux-gnu-binutils arm-linux-gnueabi-binutils"
-            make_opts="CC=clang LD=ld.lld NM=llvm-nm AR=llvm-ar STRIP=llvm-strip OBJCOPY=llvm-objcopy"
-            make_opts+=" OBJDUMP=llvm-objdump READELF=llvm-readelf LLVM_IAS=1"
-            host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
-        fi
-
-        if ! pacman -Sy --noconfirm clang lld llvm $additional_packages; then
-            err "Compiler package not found, refer to the README for details"
-            exit 1
-        fi
-
-        export CLANG_TRIPLE="aarch64-linux-gnu-"
-        export CROSS_COMPILE="aarch64-linux-gnu-"
-        export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
-    elif [[ $compiler = neutron-clang/* ]]; then
+    if [[ $compiler = neutron-clang/* ]]; then
         ver="${compiler/neutron-clang\/}"
         ver_number="${ver/\/binutils}"
 
@@ -95,7 +59,7 @@ if [[ $arch = "arm64" ]]; then
 
         echo "Downloading neutron-clang version - $ver_number"
         
-        if ! bash <(curl -s "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman") -S="$ver_number"; then
+        if ! bash <(curl -s "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman") -S="$ver_number" &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
         fi
@@ -114,6 +78,38 @@ if [[ $arch = "arm64" ]]; then
         cd "$workdir"/"$kernel_path" || exit 127
 
         export PATH="$neutron_path/bin:${PATH}"
+        export CROSS_COMPILE="aarch64-linux-gnu-"
+        export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
+    elif [[ $compiler = zyc-clang/* ]]; then
+        ver="${compiler/zyc-clang\/}"
+        ver_number="${ver/\/binutils}"
+
+        binutils="$([[ $ver = */binutils ]] && echo true || echo false)"
+
+        mkdir -p "$workdir"/"zyc-clang"-"${ver_number}"
+        cd "$workdir"/"zyc-clang"-"${ver_number}"
+
+        echo "Downloading zyc-clang version - $ver_number"
+        
+        if ! wget https://github.com/ZyCromerZ/Clang/releases/download/${ver_number}-release/${ver_number}.tar.gz -O zyc-clang.tar.gz &>/dev/null && tar -zxvf zyc-clang.tar.gz &>/dev/null; then
+            err "Failed downloading toolchain, refer to the README for details"
+            exit 1
+        fi
+
+        if $binutils; then
+            make_opts="CC=clang"
+            host_make_opts="HOSTCC=clang HOSTCXX=clang++"
+        else
+            make_opts="CC=clang LD=ld.lld NM=llvm-nm AR=llvm-ar STRIP=llvm-strip OBJCOPY=llvm-objcopy"
+            make_opts+=" OBJDUMP=llvm-objdump READELF=llvm-readelf LLVM=1 LLVM_IAS=1"
+            host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
+        fi
+
+        cd "$workdir"/"zyc-clang"-"${ver_number}" || exit 127
+        zyc_path="$(pwd)"
+        cd "$workdir"/"$kernel_path" || exit 127
+
+        export PATH="$zyc_path/bin:${PATH}"
         export CROSS_COMPILE="aarch64-linux-gnu-"
         export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
     elif [[ $compiler = proton-clang/* ]]; then
@@ -223,8 +219,8 @@ curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
 msg "Check installasi KSU..."
 ls -lah
 msg "Change user & hostname..."
-export KBUILD_BUILD_USER="m03l"
-export KBUILD_BUILD_HOST="cyberspace-arch"
+export KBUILD_BUILD_USER="$kuser"
+export KBUILD_BUILD_HOST="$khost"
 echo "branch/tag: $tag"
 echo "make options:" $arch_opts $make_opts $host_make_opts
 msg "Generating defconfig from \`make $defconfig\`..."
