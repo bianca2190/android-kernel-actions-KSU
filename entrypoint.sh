@@ -222,6 +222,9 @@ msg "Patching kernelSU..."
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.6.2
 msg "Check installasi KSU..."
 ls -lah
+msg "Change user & hostname..."
+export KBUILD_BUILD_USER="m03l"
+export KBUILD_BUILD_HOST="cyberspace-arch"
 echo "branch/tag: $tag"
 echo "make options:" $arch_opts $make_opts $host_make_opts
 msg "Generating defconfig from \`make $defconfig\`..."
