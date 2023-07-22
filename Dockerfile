@@ -7,6 +7,7 @@ RUN pacman -Sy --noconfirm base base-devel bc python python-pip jdk8-openjdk per
 RUN pacman -Sy --noconfirm gcc-multilib gcc-libs-multilib libtool-multilib lib32-libusb lib32-readline lib32-glibc bash-completion lib32-zlib
 RUN pacman -Sy --noconfirm kmod elfutils openssl dtc xz ca-certificates expect
 RUN git clone https://github.com/shuLhan/hunspell-id -b main hunspell-id && cd hunspell-id && make install
+RUN ln -s /usr/share/hunspell/id_ID.aff /usr/share/hunspell/id_ID.UTF-8.aff && ln -s /usr/share/hunspell/id_ID.dic /usr/share/hunspell/id_ID.UTF-8.dic
 ENV TZ=Asia/Jakarta
 RUN sed -i 's/#id_ID.UTF-8 UTF-8/id_ID.UTF-8 UTF-8/' /etc/locale.gen && locale-gen && echo "LANG=id_ID.UTF-8" > /etc/locale.conf
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
