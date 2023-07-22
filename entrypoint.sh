@@ -28,7 +28,6 @@ defconfig="$3"
 image="$4"
 dtbo="$5"
 dtb="$6"
-addsu="$7"
 repo_name="${GITHUB_REPOSITORY/*\/}"
 zipper_path="${ZIPPER_PATH:-zipper}"
 kernel_path="${KERNEL_PATH:-.}"
@@ -220,9 +219,7 @@ start_time="$(date +%s)"
 date="$(date +%d%m%Y-%I%M)"
 tag="$(git branch | sed 's/*\ //g')"
 msg "Patching kernelSU..."
-if [ "$addksu" = true ]; then
-    curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.6.2
-fi
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.6.2
 msg "Check installasi KSU..."
 ls -lah
 echo "branch/tag: $tag"
