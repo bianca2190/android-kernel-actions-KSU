@@ -23,9 +23,6 @@ inputs:
   dtb:
     description: need dtb or not
     required: true
-  addksu:
-    description: need ksu or not
-    required: true
 outputs:
   outfile:
     description: Zip file generated from build
@@ -45,4 +42,3 @@ runs:
     - ${{ inputs.image }}
     - ${{ inputs.dtbo }}
     - ${{ inputs.dtb }}
-    - ${{ inputs.addksu }}
