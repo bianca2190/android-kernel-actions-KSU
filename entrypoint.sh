@@ -92,7 +92,7 @@ if [[ $arch = "arm64" ]]; then
 
         echo "Downloading zyc-clang version - $ver_number"
         
-        if ! wget https://github.com/ZyCromerZ/Clang/releases/download/${ver_number}-release/Clang-${ver_number}.tar.gz -O zyc-clang.tar.gz &>/dev/null && tar -zxvf zyc-clang.tar.gz &>/dev/null; then
+        if ! wget https://github.com/ZyCromerZ/Clang/releases/download/"${ver_number}"-release/Clang-"${ver_number}".tar.gz -O zyc-clang.tar.gz &>/dev/null && tar -zxvf zyc-clang.tar.gz &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
         fi
