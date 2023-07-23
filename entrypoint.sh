@@ -140,9 +140,8 @@ if [[ $arch = "arm64" ]]; then
         fi
 
         mkdir -p "$workdir"/"proton-clang"-"${ver_number}"
-        cd "$workdir"/"proton-clang"-"${ver_number}"
-        extract_tarball /tmp/proton-clang-"${ver_number}".tar.gz ./
-        proton_path="$(pwd)"
+        extract_tarball /tmp/proton-clang-"${ver_number}".tar.gz "$workdir"/"proton-clang"-"${ver_number}"
+        proton_path="$workdir"/"proton-clang"-"${ver_number}"
         cd "$workdir"/"$kernel_path" || exit 127
 
         export PATH="$proton_path/bin:${PATH}"
@@ -174,9 +173,8 @@ if [[ $arch = "arm64" ]]; then
         fi
 
         mkdir -p "$workdir"/"prelude-clang"-"${ver_number}"
-        cd "$workdir"/"prelude-clang"-"${ver_number}"
-        extract_tarball /tmp/prelude-clang-"${ver_number}".tar.gz ./
-        prelude_path="$(pwd)"
+        extract_tarball /tmp/prelude-clang-"${ver_number}".tar.gz "$workdir"/"prelude-clang"-"${ver_number}"
+        prelude_path="$workdir"/"prelude-clang"-"${ver_number}"
         cd "$workdir"/"$kernel_path" || exit 127
 
         export PATH="$prelude_path/bin:${PATH}"
@@ -208,9 +206,8 @@ if [[ $arch = "arm64" ]]; then
         fi
 
         mkdir -p "$workdir"/"yuki-clang"-"${ver_number}"
-        cd "$workdir"/"yuki-clang"-"${ver_number}"
-        extract_tarball /tmp/yuki-clang-"${ver_number}".tar.gz ./
-        yuki_path="$(pwd)"
+        extract_tarball /tmp/yuki-clang-"${ver_number}".tar.gz "$workdir"/"yuki-clang"-"${ver_number}"
+        yuki_path="$workdir"/"yuki-clang"-"${ver_number}"
         cd "$workdir"/"$kernel_path" || exit 127
 
         export PATH="$yuki_path/bin:${PATH}"
