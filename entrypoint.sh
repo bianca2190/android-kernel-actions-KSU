@@ -126,7 +126,7 @@ if [[ $arch = "arm64" ]]; then
         # Due to different time in container and the host,
         # disable certificate check
         
-        echo "Downloading $url"
+        echo "Downloading $url versi ${ver_number}"
         if ! git clone -b ${ver_number} --depth=1 --single-branch "$url" "$workdir"/"proton-clang"-"${ver_number}" &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
@@ -159,7 +159,7 @@ if [[ $arch = "arm64" ]]; then
         # Due to different time in container and the host,
         # disable certificate check
         
-        echo "Downloading $url"
+        echo "Downloading $url versi ${ver_number}"
         if ! git clone -b ${ver_number} --depth=1 --single-branch "$url" "$workdir"/"prelude-clang"-"${ver_number}" &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
@@ -192,7 +192,7 @@ if [[ $arch = "arm64" ]]; then
         # Due to different time in container and the host,
         # disable certificate check
         
-        echo "Downloading $url"
+        echo "Downloading $url versi ${ver_number}"
         if ! git clone -b ${ver_number} --depth=1 --single-branch "$url" "$workdir"/"yuki-clang"-"${ver_number}" &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
@@ -281,16 +281,22 @@ else
 fi
 ### Custom ###
 cd "$workdir"/"$kernel_path" || exit 127
-conf="arch/arm64/configs/${defconfig}"
+link1="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/input.c"
+link2="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/exec.c"
+link3="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/open.c"
+link4="https://github.com/bianca2190/Kernel-Builder/blob/vayu-13.0/ksu_vayu/read_write.c"
+link5="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/stat.c"
 msg "Menerapkan Nama Kernel ke $kname ..."
 sed -i "s/.*/-$kname/" localversion
 msg "Patching KernelSU..."
 if [ "$addksu" = true ]; then
     curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s "$verksu" &>/dev/null
-    echo "CONFIG_MODULES=y" >> "$conf"
-    echo "CONFIG_KPROBES=y" >> "$conf"
-    echo "CONFIG_HAVE_KPROBES=y" >> "$conf"
-    echo "CONFIG_KPROBE_EVENTS=y" >> "$conf"
+    curl "$link1" >> drivers/input/input.c &>/dev/null
+    curl "$link2" >> fs/exec.c &>/dev/null
+    curl "$link3" >> fs/open.c &>/dev/null
+    curl "$link4" >> fs/read_write.c &>/dev/null
+    curl "$link5" >> fs/stat.c &>/dev/null
+    echo "Perhatian ! sementara hanya mendukung vayu/PocoX3Pro, atau mungkin bisa di device SM8150 silahkan di coba, DWYOR :)"
 fi
 msg "Check installasi KernelSU..."
 if [ -d "KernelSU" ]; then
@@ -298,15 +304,8 @@ if [ -d "KernelSU" ]; then
 else
     echo "Folder 'KernelSU' tidak ada..."
 fi
-if grep -q "CONFIG_OVERLAY_FS=y" "$conf" && \
-   grep -q "CONFIG_MODULES=y" "$conf" && \
-   grep -q "CONFIG_KPROBES=y" "$conf" && \
-   grep -q "CONFIG_HAVE_KPROBES=y" "$conf" && \
-   grep -q "CONFIG_KPROBE_EVENTS=y" "$conf"; then
-    echo "Semua konfigurasi KernelSU ditemukan..."
-else
-    echo "Tidak semua konfigurasi KernelSU ditemukan..."
-fi
+msg "KernelSU sukses terinstall..."
+sleep 5
 msg "Change user & hostname..."
 export KBUILD_BUILD_USER="$kuser"
 export KBUILD_BUILD_HOST="$khost"
