@@ -187,7 +187,7 @@ if [[ $arch = "arm64" ]]; then
     elif [[ $compiler = yuki-clang/* ]]; then
         ver="${compiler/yuki-clang\/}"
         ver_number="${ver/\/binutils}"
-        url="https://gitlab.com/TheXPerienceProject/yuki-clang-new/-/archive/${ver_number}/yuki-clang-new-${ver_number}.tar.gz"
+        url="https://gitlab.com/TheXPerienceProject/yuki-clang-new"
         binutils="$([[ $ver = */binutils ]] && echo true || echo false)"
         # Due to different time in container and the host,
         # disable certificate check
