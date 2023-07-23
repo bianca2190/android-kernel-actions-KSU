@@ -121,13 +121,13 @@ if [[ $arch = "arm64" ]]; then
     elif [[ $compiler = proton-clang/* ]]; then
         ver="${compiler/proton-clang\/}"
         ver_number="${ver/\/binutils}"
-        url="https://gitlab.com/LeCmnGend/proton-clang/-/archive/clang-${ver_number}/proton-clang-clang-${ver_number}.tar.gz"
+        url="https://gitlab.com/LeCmnGend/proton-clang"
         binutils="$([[ $ver = */binutils ]] && echo true || echo false)"
         # Due to different time in container and the host,
         # disable certificate check
         
         echo "Downloading $url"
-        if ! wget --no-check-certificate "$url" -O /tmp/proton-clang-"${ver_number}".tar.gz &>/dev/null; then
+        if ! git clone -b ${ver_number} --depth=1 --single-branch "$url" "$workdir"/"proton-clang"-"${ver_number}" &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
         fi
@@ -141,8 +141,6 @@ if [[ $arch = "arm64" ]]; then
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
 
-        mkdir -p "$workdir"/"proton-clang"-"${ver_number}"
-        extract_tarball /tmp/proton-clang-"${ver_number}".tar.gz "$workdir"/"proton-clang"-"${ver_number}"
         cd "$workdir"/"proton-clang"-"${ver_number}"
         ls -lah
         proton_path="$(pwd)"
@@ -156,13 +154,13 @@ if [[ $arch = "arm64" ]]; then
     elif [[ $compiler = prelude-clang/* ]]; then
         ver="${compiler/prelude-clang\/}"
         ver_number="${ver/\/binutils}"
-        url="https://gitlab.com/jjpprrrr/prelude-clang/-/archive/${ver_number}/prelude-clang-${ver_number}.tar.gz"
+        url="https://gitlab.com/jjpprrrr/prelude-clang"
         binutils="$([[ $ver = */binutils ]] && echo true || echo false)"
         # Due to different time in container and the host,
         # disable certificate check
         
         echo "Downloading $url"
-        if ! wget --no-check-certificate "$url" -O /tmp/prelude-clang-"${ver_number}".tar.gz &>/dev/null; then
+        if ! git clone -b ${ver_number} --depth=1 --single-branch "$url" "$workdir"/"prelude-clang"-"${ver_number}" &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
         fi
@@ -176,8 +174,6 @@ if [[ $arch = "arm64" ]]; then
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
 
-        mkdir -p "$workdir"/"prelude-clang"-"${ver_number}"
-        extract_tarball /tmp/prelude-clang-"${ver_number}".tar.gz "$workdir"/"prelude-clang"-"${ver_number}"
         cd "$workdir"/"prelude-clang"-"${ver_number}"
         ls -lah
         prelude_path="$(pwd)"
@@ -197,7 +193,7 @@ if [[ $arch = "arm64" ]]; then
         # disable certificate check
         
         echo "Downloading $url"
-        if ! wget --no-check-certificate "$url" -O /tmp/yuki-clang-"${ver_number}".tar.gz &>/dev/null; then
+        if ! git clone -b ${ver_number} --depth=1 --single-branch "$url" "$workdir"/"yuki-clang"-"${ver_number}" &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
         fi
@@ -211,8 +207,6 @@ if [[ $arch = "arm64" ]]; then
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
 
-        mkdir -p "$workdir"/"yuki-clang"-"${ver_number}"
-        extract_tarball /tmp/yuki-clang-"${ver_number}".tar.gz "$workdir"/"yuki-clang"-"${ver_number}"
         cd "$workdir"/"yuki-clang"-"${ver_number}"
         ls -lah
         yuki_path="$(pwd)"
