@@ -216,17 +216,18 @@ else
 fi
 
 ### Custom ###
+
 cd "$workdir"/"$kernel_path" || exit 127
-conf="./arch/arm64/configs/$defconfig"
+conf="arch/arm64/configs/${defconfig}"
 msg "Menerapkan Nama Kernel ke $kname ..."
 sed -i "s/.*/-$kname/" localversion
 msg "Patching KernelSU..."
 if [ "$addksu" = true ]; then
     curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s "$verksu" &>/dev/null
-    echo "CONFIG_MODULES=y" >> ./arch/arm64/configs/"$defconfig"
-    echo "CONFIG_KPROBES=y" >> ./arch/arm64/configs/"$defconfig"
-    echo "CONFIG_HAVE_KPROBES=y" >> ./arch/arm64/configs/"$defconfig"
-    echo "CONFIG_KPROBE_EVENTS=y" >> ./arch/arm64/configs/"$defconfig"
+    echo "CONFIG_MODULES=y" >> "$conf"
+    echo "CONFIG_KPROBES=y" >> "$conf"
+    echo "CONFIG_HAVE_KPROBES=y" >> "$conf"
+    echo "CONFIG_KPROBE_EVENTS=y" >> "$conf"
 fi
 msg "Check installasi KernelSU..."
 if [ -d "KernelSU" ]; then
@@ -249,6 +250,7 @@ export KBUILD_BUILD_HOST="$khost"
 
 ### Custom ###
 
+ls -lah arch/"$arch"/configs
 cd "$workdir"/"$kernel_path" || exit 127
 start_time="$(date +%s)"
 date="$(date +%d%m%Y-%I%M)"
