@@ -110,7 +110,7 @@ if [[ $arch = "arm64" ]]; then
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
         
-        extract_tarball /tmp/zyc-clang-"${ver_number}".tar.gz /
+        extract_tarball /tmp/zyc-clang-"${ver_number}".tar.gz ./
         cd "$workdir"/"zyc-clang"-"${ver_number}" || exit 127
         zyc_path="$(pwd)"
         cd "$workdir"/"$kernel_path" || exit 127
@@ -142,7 +142,7 @@ if [[ $arch = "arm64" ]]; then
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
 
-        extract_tarball /tmp/proton-clang-"${ver_number}".tar.gz /
+        extract_tarball /tmp/proton-clang-"${ver_number}".tar.gz ./
         cd /proton-clang-"${ver_number}"* || exit 127
         proton_path="$(pwd)"
         cd "$workdir"/"$kernel_path" || exit 127
@@ -217,7 +217,6 @@ fi
 
 ### Custom ###
 
-cd "$workdir"/"$kernel_path" || exit 127
 conf="arch/arm64/configs/${defconfig}"
 msg "Menerapkan Nama Kernel ke $kname ..."
 sed -i "s/.*/-$kname/" localversion
@@ -249,7 +248,7 @@ export KBUILD_BUILD_USER="$kuser"
 export KBUILD_BUILD_HOST="$khost"
 
 ### Custom ###
-cat "$conf"
+
 cd "$workdir"/"$kernel_path" || exit 127
 start_time="$(date +%s)"
 date="$(date +%d%m%Y-%I%M)"
