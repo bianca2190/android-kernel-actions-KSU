@@ -26,11 +26,17 @@ inputs:
   addksu:
     description: need addksu or not
     required: true
+  verksu:
+    description: need verksu or not
+    required: true
   kuser:
     description: need kuser or not
     required: true
   khost:
-    description: need host or not
+    description: need khost or not
+    required: true
+  kname:
+    description: need kname or not
     required: true
 outputs:
   outfile:
@@ -52,5 +58,7 @@ runs:
     - ${{ inputs.dtbo }}
     - ${{ inputs.dtb }}
     - ${{ inputs.addksu }}
+    - ${{ inputs.verksu }}
     - ${{ inputs.kuser }}
     - ${{ inputs.khost }}
+    - ${{ inputs.kname }}
