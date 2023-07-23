@@ -29,8 +29,10 @@ image="$4"
 dtbo="$5"
 dtb="$6"
 addksu="$7"
-kuser="$8"
-khost="$9"
+verksu="$8"
+kuser="$9"
+khost="$10"
+kname="$11"
 repo_name="${GITHUB_REPOSITORY/*\/}"
 zipper_path="${ZIPPER_PATH:-zipper}"
 kernel_path="${KERNEL_PATH:-.}"
@@ -73,7 +75,7 @@ if [[ $arch = "arm64" ]]; then
             make_opts+=" OBJDUMP=llvm-objdump READELF=llvm-readelf LLVM=1 LLVM_IAS=1"
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
-
+        
         cd "$workdir"/"neutron-clang"-"${ver_number}" || exit 127
         neutron_path="$(pwd)"
         cd "$workdir"/"$kernel_path" || exit 127
@@ -94,11 +96,10 @@ if [[ $arch = "arm64" ]]; then
 
         echo "Downloading zyc-clang version - $ver_number"
         
-        if ! wget --no-check-certificate "$url" -O /tmp/zyc-clang.tar.gz &>/dev/null; then
+        if ! wget --no-check-certificate "$url" -O /tmp/zyc-clang-"${ver_number}".tar.gz &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
         fi
-        extract_tarball /tmp/zyc-clang.tar.gz ./
 
         if $binutils; then
             make_opts="CC=clang"
@@ -108,7 +109,8 @@ if [[ $arch = "arm64" ]]; then
             make_opts+=" OBJDUMP=llvm-objdump READELF=llvm-readelf LLVM=1 LLVM_IAS=1"
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
-
+        
+        extract_tarball /tmp/zyc-clang-"${ver_number}".tar.gz /
         cd "$workdir"/"zyc-clang"-"${ver_number}" || exit 127
         zyc_path="$(pwd)"
         cd "$workdir"/"$kernel_path" || exit 127
@@ -121,7 +123,6 @@ if [[ $arch = "arm64" ]]; then
         ver="${compiler/proton-clang\/}"
         ver_number="${ver/\/binutils}"
         url="https://gitlab.com/LeCmnGend/proton-clang/-/archive/clang-${ver_number}/proton-clang-clang-${ver_number}.tar.gz"
-#        url="https://github.com/kdrag0n/proton-clang/archive/${ver_number}.tar.gz"
         binutils="$([[ $ver = */binutils ]] && echo true || echo false)"
 
         # Due to different time in container and the host,
@@ -141,7 +142,6 @@ if [[ $arch = "arm64" ]]; then
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
 
-        pacman -Sy --noconfirm gcc-libs || exit 127
         extract_tarball /tmp/proton-clang-"${ver_number}".tar.gz /
         cd /proton-clang-"${ver_number}"* || exit 127
         proton_path="$(pwd)"
@@ -201,8 +201,6 @@ if [[ $arch = "arm64" ]]; then
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
 
-        pacman -Sy --noconfirm gcc-libs || exit 127
-
         export PATH="/aosp-clang/bin:/aosp-gcc-arm64/bin:/aosp-gcc-arm/bin:/aosp-gcc-host/bin:$PATH"
         export CLANG_TRIPLE="aarch64-linux-gnu-"
         export CROSS_COMPILE="aarch64-linux-android-"
@@ -217,20 +215,45 @@ else
     exit 100
 fi
 
-cd "$workdir"/"$kernel_path" || exit 127
-start_time="$(date +%s)"
-date="$(date +%d%m%Y-%I%M)"
-tag="$(git branch | sed 's/*\ //g')"
-clang="$(cat /tmp/clangversion.txt)"
-msg "Patching kernelSU..."
+### Custom ###
+
+conf="./arch/arm64/configs/$defconfig"
+msg "Menerapkan Nama Kernel ke $kname ..."
+sed -i "s/.*/-$kname/" localversion
+msg "Patching KernelSU..."
 if [ "$addksu" = true ]; then
-    curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.6.2
+    curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s "$verksu" &>/dev/null
+    echo "CONFIG_MODULES=y" >> ./arch/arm64/configs/$defconfig
+    echo "CONFIG_KPROBES=y" >> ./arch/arm64/configs/$defconfig
+    echo "CONFIG_HAVE_KPROBES=y" >> ./arch/arm64/configs/$defconfig
+    echo "CONFIG_KPROBE_EVENTS=y" >> ./arch/arm64/configs/$defconfig
 fi
-msg "Check installasi KSU..."
-ls -lah
+msg "Check installasi KernelSU..."
+if [ -d "KernelSU" ]; then
+    echo "Folder 'KernelSU' ada..."
+else
+    echo "Folder 'KernelSU' tidak ada..."
+fi
+if grep -q "CONFIG_OVERLAY_FS=y" "$conf" && \
+   grep -q "CONFIG_MODULES=y" "$conf" && \
+   grep -q "CONFIG_KPROBES=y" "$conf" && \
+   grep -q "CONFIG_HAVE_KPROBES=y" "$conf" && \
+   grep -q "CONFIG_KPROBE_EVENTS=y" "$conf"; then
+    echo "Semua konfigurasi KernelSU ditemukan..."
+else
+    echo "Tidak semua konfigurasi ditemukan..."
+fi
 msg "Change user & hostname..."
 export KBUILD_BUILD_USER="$kuser"
 export KBUILD_BUILD_HOST="$khost"
+
+### Custom ###
+
+cd "$workdir"/"$kernel_path" || exit 127
+start_time="$(date +%s)"
+date="$(date +%d%m%Y-%I%M)"
+tag="$(git symbolic-ref --short HEAD)"
+clang="$(cat /tmp/clangversion.txt)"
 echo "branch/tag: $tag"
 echo "make options:" $arch_opts $make_opts $host_make_opts
 msg "Generating defconfig from \`make $defconfig\`..."
@@ -248,7 +271,7 @@ if ! make O=out $arch_opts $make_opts $host_make_opts -j"$(nproc --all)"; then
 fi
 set_output elapsed_time "$(echo "$(date +%s)"-"$start_time" | bc)"
 msg "Packaging the kernel..."
-zip_filename="${name}-${tag}-${date}-${clang}.zip"
+zip_filename="${name}-${tag}-${clang}-${date}.zip"
 if [[ -e "$workdir"/"$zipper_path" ]]; then
     cp out/arch/"$arch"/boot/"$image" "$workdir"/"$zipper_path"/"$image"
 
