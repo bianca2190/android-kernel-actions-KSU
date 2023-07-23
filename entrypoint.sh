@@ -106,6 +106,7 @@ if [[ $arch = "arm64" ]]; then
             make_opts+=" OBJDUMP=llvm-objdump READELF=llvm-readelf LLVM=1 LLVM_IAS=1"
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
+        
         mkdir /zyc-clang-"${ver_number}"
         cd /zyc-clang-"${ver_number}" || exit 127
         extract_tarball /tmp/zyc-clang-"${ver_number}".tar.gz ./
@@ -139,8 +140,9 @@ if [[ $arch = "arm64" ]]; then
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
 
-        extract_tarball /tmp/proton-clang-"${ver_number}".tar.gz /
+        mkdir /proton-clang-"${ver_number}"
         cd /proton-clang-"${ver_number}" || exit 127
+        extract_tarball /tmp/proton-clang-"${ver_number}".tar.gz ./
         proton_path="$(pwd)"
         cd "$workdir"/"$kernel_path" || exit 127
 
@@ -172,8 +174,9 @@ if [[ $arch = "arm64" ]]; then
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
 
-        extract_tarball /tmp/prelude-clang-"${ver_number}".tar.gz /
+        mkdir /prelude-clang-"${ver_number}"
         cd /prelude-clang-"${ver_number}" || exit 127
+        extract_tarball /tmp/prelude-clang-"${ver_number}".tar.gz ./
         prelude_path="$(pwd)"
         cd "$workdir"/"$kernel_path" || exit 127
 
@@ -205,8 +208,9 @@ if [[ $arch = "arm64" ]]; then
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
 
-        extract_tarball /tmp/yuki-clang-"${ver_number}".tar.gz /
+        mkdir /yuki-clang-"${ver_number}"
         cd /yuki-clang-"${ver_number}" || exit 127
+        extract_tarball /tmp/yuki-clang-"${ver_number}".tar.gz ./
         yuki_path="$(pwd)"
         cd "$workdir"/"$kernel_path" || exit 127
 
