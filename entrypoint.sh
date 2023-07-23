@@ -182,6 +182,39 @@ if [[ $arch = "arm64" ]]; then
         export CROSS_COMPILE="aarch64-linux-gnu-"
         export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
         echo "prelude-clang" >> /tmp/clangversion.txt
+    elif [[ $compiler = yuki-clang/* ]]; then
+        ver="${compiler/yuki-clang\/}"
+        ver_number="${ver/\/binutils}"
+        url="https://gitlab.com/TheXPerienceProject/yuki-clang-new/-/archive/${ver_number}/yuki-clang-new-${ver_number}.tar.gz"
+        binutils="$([[ $ver = */binutils ]] && echo true || echo false)"
+        # Due to different time in container and the host,
+        # disable certificate check
+        
+        echo "Downloading $url"
+        if ! wget --no-check-certificate "$url" -O /tmp/yuki-clang-"${ver_number}".tar.gz &>/dev/null; then
+            err "Failed downloading toolchain, refer to the README for details"
+            exit 1
+        fi
+
+        if $binutils; then
+            make_opts="CC=clang"
+            host_make_opts="HOSTCC=clang HOSTCXX=clang++"
+        else
+            make_opts="CC=clang LD=ld.lld NM=llvm-nm AR=llvm-ar STRIP=llvm-strip OBJCOPY=llvm-objcopy"
+            make_opts+=" OBJDUMP=llvm-objdump READELF=llvm-readelf LLVM_IAS=1"
+            host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
+        fi
+
+        extract_tarball /tmp/yuki-clang-"${ver_number}".tar.gz /
+        cd /yuki-clang-"${ver_number}" || exit 127
+        yuki_path="$(pwd)"
+        cd "$workdir"/"$kernel_path" || exit 127
+
+        export PATH="$yuki_path/bin:${PATH}"
+        export CLANG_TRIPLE="aarch64-linux-gnu-"
+        export CROSS_COMPILE="aarch64-linux-gnu-"
+        export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
+        echo "yuki-clang" >> /tmp/clangversion.txt
     elif [[ $compiler = aosp-clang/* ]]; then
         ver="${compiler/aosp-clang\/}"
         ver_number="${ver/\/binutils}"
@@ -245,6 +278,7 @@ else
     exit 100
 fi
 ### Custom ###
+cd "$workdir"/"$kernel_path" || exit 127
 conf="arch/arm64/configs/${defconfig}"
 msg "Menerapkan Nama Kernel ke $kname ..."
 sed -i "s/.*/-$kname/" localversion
