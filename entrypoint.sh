@@ -108,7 +108,7 @@ if [[ $arch = "arm64" ]]; then
         fi
         
         extract_tarball /tmp/zyc-clang-"${ver_number}".tar.gz /
-        cd /zyc-clang-"${ver_number}"* || exit 127
+        cd /zyc-clang-"${ver_number}" || exit 127
         zyc_path="$(pwd)"
         cd "$workdir"/"$kernel_path" || exit 127
 
