@@ -33,7 +33,7 @@ verksu="$8"
 kuser="$9"
 khost="${10}"
 kname="${11}"
-tag="${12}"
+tag="${12}
 repo_name="${GITHUB_REPOSITORY/*\/}"
 zipper_path="${ZIPPER_PATH:-zipper}"
 kernel_path="${KERNEL_PATH:-.}"
@@ -89,12 +89,8 @@ if [[ $arch = "arm64" ]]; then
         ver="${compiler/zyc-clang\/}"
         ver_number="${ver/\/binutils}"
         url="https://github.com/ZyCromerZ/Clang/releases/download/"${ver_number}"-release/Clang-"${ver_number}".tar.gz"
-
         binutils="$([[ $ver = */binutils ]] && echo true || echo false)"
-
-        mkdir -p "$workdir"/"zyc-clang"-"${ver_number}"
-        cd "$workdir"/"zyc-clang"-"${ver_number}"
-
+         # space #
         echo "Downloading zyc-clang version - $ver_number"
         
         if ! wget --no-check-certificate "$url" -O /tmp/zyc-clang-"${ver_number}".tar.gz &>/dev/null; then
@@ -111,8 +107,8 @@ if [[ $arch = "arm64" ]]; then
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
         
-        extract_tarball /tmp/zyc-clang-"${ver_number}".tar.gz ./
-        cd "$workdir"/"zyc-clang"-"${ver_number}" || exit 127
+        extract_tarball /tmp/zyc-clang-"${ver_number}".tar.gz /
+        cd /zyc-clang-"${ver_number}"* || exit 127
         zyc_path="$(pwd)"
         cd "$workdir"/"$kernel_path" || exit 127
 
@@ -125,9 +121,9 @@ if [[ $arch = "arm64" ]]; then
         ver_number="${ver/\/binutils}"
         url="https://gitlab.com/LeCmnGend/proton-clang/-/archive/clang-${ver_number}/proton-clang-clang-${ver_number}.tar.gz"
         binutils="$([[ $ver = */binutils ]] && echo true || echo false)"
-
         # Due to different time in container and the host,
         # disable certificate check
+        
         echo "Downloading $url"
         if ! wget --no-check-certificate "$url" -O /tmp/proton-clang-"${ver_number}".tar.gz &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
@@ -143,8 +139,8 @@ if [[ $arch = "arm64" ]]; then
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
 
-        extract_tarball /tmp/proton-clang-"${ver_number}".tar.gz ./
-        cd /proton-clang-"${ver_number}"* || exit 127
+        extract_tarball /tmp/proton-clang-"${ver_number}".tar.gz /
+        cd /proton-clang-"${ver_number}" || exit 127
         proton_path="$(pwd)"
         cd "$workdir"/"$kernel_path" || exit 127
 
@@ -153,6 +149,39 @@ if [[ $arch = "arm64" ]]; then
         export CROSS_COMPILE="aarch64-linux-gnu-"
         export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
         echo "proton-clang" >> /tmp/clangversion.txt
+    elif [[ $compiler = prelude-clang/* ]]; then
+        ver="${compiler/prelude-clang\/}"
+        ver_number="${ver/\/binutils}"
+        url="https://gitlab.com/jjpprrrr/prelude-clang/-/archive/${ver_number}/prelude-clang-${ver_number}.tar.gz"
+        binutils="$([[ $ver = */binutils ]] && echo true || echo false)"
+        # Due to different time in container and the host,
+        # disable certificate check
+        
+        echo "Downloading $url"
+        if ! wget --no-check-certificate "$url" -O /tmp/prelude-clang-"${ver_number}".tar.gz &>/dev/null; then
+            err "Failed downloading toolchain, refer to the README for details"
+            exit 1
+        fi
+
+        if $binutils; then
+            make_opts="CC=clang"
+            host_make_opts="HOSTCC=clang HOSTCXX=clang++"
+        else
+            make_opts="CC=clang LD=ld.lld NM=llvm-nm AR=llvm-ar STRIP=llvm-strip OBJCOPY=llvm-objcopy"
+            make_opts+=" OBJDUMP=llvm-objdump READELF=llvm-readelf LLVM_IAS=1"
+            host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
+        fi
+
+        extract_tarball /tmp/prelude-clang-"${ver_number}".tar.gz /
+        cd /prelude-clang-"${ver_number}" || exit 127
+        prelude_path="$(pwd)"
+        cd "$workdir"/"$kernel_path" || exit 127
+
+        export PATH="$prelude_path/bin:${PATH}"
+        export CLANG_TRIPLE="aarch64-linux-gnu-"
+        export CROSS_COMPILE="aarch64-linux-gnu-"
+        export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
+        echo "prelude-clang" >> /tmp/clangversion.txt
     elif [[ $compiler = aosp-clang/* ]]; then
         ver="${compiler/aosp-clang\/}"
         ver_number="${ver/\/binutils}"
