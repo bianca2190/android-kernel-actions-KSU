@@ -43,7 +43,7 @@ python_version="${PYTHON_VERSION:-3}"
 msg "Updating container..."
 pacman -Syyu --noconfirm
 msg "Cek space..."
-df -lah
+df -h /
 
 set_output hash "$(cd "$kernel_path" && git rev-parse HEAD || exit 127)"
 msg "Installing toolchain..."
@@ -244,10 +244,7 @@ else
     err "Currently this action only supports arm64, refer to the README for more detail"
     exit 100
 fi
-
 ### Custom ###
-
-ls -lah
 conf="arch/arm64/configs/${defconfig}"
 msg "Menerapkan Nama Kernel ke $kname ..."
 sed -i "s/.*/-$kname/" localversion
@@ -277,11 +274,8 @@ fi
 msg "Change user & hostname..."
 export KBUILD_BUILD_USER="$kuser"
 export KBUILD_BUILD_HOST="$khost"
-
 ### Custom ###
-
 cd "$workdir"/"$kernel_path" || exit 127
-ls -lah
 start_time="$(date +%s)"
 date="$(date +%d%m%Y-%I%M)"
 clang="$(cat /tmp/clangversion.txt)"
