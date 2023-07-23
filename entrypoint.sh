@@ -33,6 +33,7 @@ verksu="$8"
 kuser="$9"
 khost="${10}"
 kname="${11}"
+tag="${12}
 repo_name="${GITHUB_REPOSITORY/*\/}"
 zipper_path="${ZIPPER_PATH:-zipper}"
 kernel_path="${KERNEL_PATH:-.}"
@@ -217,6 +218,7 @@ fi
 
 ### Custom ###
 
+ls -lah
 conf="arch/arm64/configs/${defconfig}"
 msg "Menerapkan Nama Kernel ke $kname ..."
 sed -i "s/.*/-$kname/" localversion
@@ -250,9 +252,9 @@ export KBUILD_BUILD_HOST="$khost"
 ### Custom ###
 
 cd "$workdir"/"$kernel_path" || exit 127
+ls -lah
 start_time="$(date +%s)"
 date="$(date +%d%m%Y-%I%M)"
-tag="$(git symbolic-ref --short HEAD)"
 clang="$(cat /tmp/clangversion.txt)"
 echo "branch/tag: $tag"
 echo "make options:" $arch_opts $make_opts $host_make_opts
