@@ -251,6 +251,7 @@ export KBUILD_BUILD_HOST="$khost"
 ### Custom ###
 
 ls -lah arch/"$arch"/configs
+chmod 644 "$conf"
 cat "$conf"
 cd "$workdir"/"$kernel_path" || exit 127
 start_time="$(date +%s)"
