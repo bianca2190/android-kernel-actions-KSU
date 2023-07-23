@@ -81,6 +81,7 @@ if [[ $arch = "arm64" ]]; then
         export PATH="$neutron_path/bin:${PATH}"
         export CROSS_COMPILE="aarch64-linux-gnu-"
         export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
+        echo "neutron-clang" >> /tmp/clangversion.txt
     elif [[ $compiler = zyc-clang/* ]]; then
         ver="${compiler/zyc-clang\/}"
         ver_number="${ver/\/binutils}"
@@ -115,6 +116,7 @@ if [[ $arch = "arm64" ]]; then
         export PATH="$zyc_path/bin:${PATH}"
         export CROSS_COMPILE="aarch64-linux-gnu-"
         export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
+        echo "zyc-clang" >> /tmp/clangversion.txt
     elif [[ $compiler = proton-clang/* ]]; then
         ver="${compiler/proton-clang\/}"
         ver_number="${ver/\/binutils}"
@@ -149,6 +151,7 @@ if [[ $arch = "arm64" ]]; then
         export CLANG_TRIPLE="aarch64-linux-gnu-"
         export CROSS_COMPILE="aarch64-linux-gnu-"
         export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
+        echo "proton-clang" >> /tmp/clangversion.txt
     elif [[ $compiler = aosp-clang/* ]]; then
         ver="${compiler/aosp-clang\/}"
         ver_number="${ver/\/binutils}"
@@ -204,6 +207,7 @@ if [[ $arch = "arm64" ]]; then
         export CLANG_TRIPLE="aarch64-linux-gnu-"
         export CROSS_COMPILE="aarch64-linux-android-"
         export CROSS_COMPILE_ARM32="arm-linux-androideabi-"
+        echo "aosp-clang" >> /tmp/clangversion.txt
     else
         err "Unsupported toolchain string. refer to the README for more detail"
         exit 100
@@ -217,6 +221,7 @@ cd "$workdir"/"$kernel_path" || exit 127
 start_time="$(date +%s)"
 date="$(date +%d%m%Y-%I%M)"
 tag="$(git branch | sed 's/*\ //g')"
+clang="$(cat /tmp/clangversion.txt)"
 msg "Patching kernelSU..."
 if [ "$addksu" = true ]; then
     curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.6.2
@@ -243,7 +248,7 @@ if ! make O=out $arch_opts $make_opts $host_make_opts -j"$(nproc --all)"; then
 fi
 set_output elapsed_time "$(echo "$(date +%s)"-"$start_time" | bc)"
 msg "Packaging the kernel..."
-zip_filename="${name}-${tag}-${date}.zip"
+zip_filename="${name}-${tag}-${date}-${clang}.zip"
 if [[ -e "$workdir"/"$zipper_path" ]]; then
     cp out/arch/"$arch"/boot/"$image" "$workdir"/"$zipper_path"/"$image"
 
