@@ -38,6 +38,9 @@ inputs:
   kname:
     description: need kname or not
     required: true
+  tag:
+    description: need tag or not
+    required: true
 outputs:
   outfile:
     description: Zip file generated from build
@@ -62,3 +65,4 @@ runs:
     - ${{ inputs.kuser }}
     - ${{ inputs.khost }}
     - ${{ inputs.kname }}
+    - ${{ inputs.tag }}
