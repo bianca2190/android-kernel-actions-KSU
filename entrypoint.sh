@@ -31,8 +31,8 @@ dtb="$6"
 addksu="$7"
 verksu="$8"
 kuser="$9"
-khost="$10"
-kname="$11"
+khost="${10}"
+kname="${11}"
 repo_name="${GITHUB_REPOSITORY/*\/}"
 zipper_path="${ZIPPER_PATH:-zipper}"
 kernel_path="${KERNEL_PATH:-.}"
@@ -216,17 +216,17 @@ else
 fi
 
 ### Custom ###
-
+cd "$workdir"/"$kernel_path" || exit 127
 conf="./arch/arm64/configs/$defconfig"
 msg "Menerapkan Nama Kernel ke $kname ..."
 sed -i "s/.*/-$kname/" localversion
 msg "Patching KernelSU..."
 if [ "$addksu" = true ]; then
     curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s "$verksu" &>/dev/null
-    echo "CONFIG_MODULES=y" >> ./arch/arm64/configs/$defconfig
-    echo "CONFIG_KPROBES=y" >> ./arch/arm64/configs/$defconfig
-    echo "CONFIG_HAVE_KPROBES=y" >> ./arch/arm64/configs/$defconfig
-    echo "CONFIG_KPROBE_EVENTS=y" >> ./arch/arm64/configs/$defconfig
+    echo "CONFIG_MODULES=y" >> ./arch/arm64/configs/"$defconfig"
+    echo "CONFIG_KPROBES=y" >> ./arch/arm64/configs/"$defconfig"
+    echo "CONFIG_HAVE_KPROBES=y" >> ./arch/arm64/configs/"$defconfig"
+    echo "CONFIG_KPROBE_EVENTS=y" >> ./arch/arm64/configs/"$defconfig"
 fi
 msg "Check installasi KernelSU..."
 if [ -d "KernelSU" ]; then
@@ -241,7 +241,7 @@ if grep -q "CONFIG_OVERLAY_FS=y" "$conf" && \
    grep -q "CONFIG_KPROBE_EVENTS=y" "$conf"; then
     echo "Semua konfigurasi KernelSU ditemukan..."
 else
-    echo "Tidak semua konfigurasi ditemukan..."
+    echo "Tidak semua konfigurasi KernelSU ditemukan..."
 fi
 msg "Change user & hostname..."
 export KBUILD_BUILD_USER="$kuser"
