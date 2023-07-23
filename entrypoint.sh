@@ -106,12 +106,12 @@ if [[ $arch = "arm64" ]]; then
             make_opts+=" OBJDUMP=llvm-objdump READELF=llvm-readelf LLVM=1 LLVM_IAS=1"
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
-        
-        extract_tarball /tmp/zyc-clang-"${ver_number}".tar.gz /
+        mkdir /zyc-clang-"${ver_number}"
         cd /zyc-clang-"${ver_number}" || exit 127
+        extract_tarball /tmp/zyc-clang-"${ver_number}".tar.gz ./
         zyc_path="$(pwd)"
         cd "$workdir"/"$kernel_path" || exit 127
-
+        
         export PATH="$zyc_path/bin:${PATH}"
         export CROSS_COMPILE="aarch64-linux-gnu-"
         export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
