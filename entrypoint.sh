@@ -28,18 +28,28 @@ defconfig="$3"
 image="$4"
 dtbo="$5"
 dtb="$6"
+addksu="$7"
+verksu="$8"
+kuser="$9"
+khost="${10}"
+kname="${11}"
+tag="${12}"
 repo_name="${GITHUB_REPOSITORY/*\/}"
 zipper_path="${ZIPPER_PATH:-zipper}"
 kernel_path="${KERNEL_PATH:-.}"
 name="${NAME:-$repo_name}"
 python_version="${PYTHON_VERSION:-3}"
 
+msg "Check space sebelum..."
+df -h /
 msg "Updating container..."
 apt update && apt upgrade -y
 msg "Installing essential packages..."
 apt install -y --no-install-recommends git make bc bison openssl \
     curl zip kmod cpio flex libelf-dev libssl-dev libtfm-dev wget \
     device-tree-compiler ca-certificates python3 python2 xz-utils
+msg "Check space setelah..."
+df -h /
 ln -sf "/usr/bin/python${python_version}" /usr/bin/python
 set_output hash "$(cd "$kernel_path" && git rev-parse HEAD || exit 127)"
 msg "Installing toolchain..."
@@ -101,16 +111,84 @@ if [[ $arch = "arm64" ]]; then
         export CLANG_TRIPLE="aarch64-linux-gnu-"
         export CROSS_COMPILE="aarch64-linux-gnu-"
         export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
+    if [[ $compiler = neutron-clang/* ]]; then
+        ver="${compiler/neutron-clang\/}"
+        ver_number="${ver/\/binutils}"
+
+        binutils="$([[ $ver = */binutils ]] && echo true || echo false)"
+
+        mkdir -p "$workdir"/"neutron-clang"-"${ver_number}"
+        cd "$workdir"/"neutron-clang"-"${ver_number}"
+
+        echo "Downloading neutron-clang version - $ver_number"
+        
+        if ! bash <(curl -s "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman") -S="$ver_number" &>/dev/null; then
+            err "Failed downloading toolchain, refer to the README for details"
+            exit 1
+        fi
+
+        if $binutils; then
+            make_opts="CC=clang"
+            host_make_opts="HOSTCC=clang HOSTCXX=clang++"
+        else
+            make_opts="CC=clang LD=ld.lld NM=llvm-nm AR=llvm-ar STRIP=llvm-strip OBJCOPY=llvm-objcopy"
+            make_opts+=" OBJDUMP=llvm-objdump READELF=llvm-readelf LLVM=1 LLVM_IAS=1"
+            host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
+        fi
+        
+        apt install -y --no-install-recommends libgcc-10-dev || exit 127
+        cd "$workdir"/"neutron-clang"-"${ver_number}" || exit 127
+        neutron_path="$(pwd)"
+        cd "$workdir"/"$kernel_path" || exit 127
+
+        export PATH="$neutron_path/bin:${PATH}"
+        export CROSS_COMPILE="aarch64-linux-gnu-"
+        export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
+        echo "neutron-clang" >> /tmp/clangversion.txt
+    elif [[ $compiler = zyc-clang/* ]]; then
+        ver="${compiler/zyc-clang\/}"
+        ver_number="${ver/\/binutils}"
+        url="https://github.com/ZyCromerZ/Clang/releases/download/"${ver_number}"-release/Clang-"${ver_number}".tar.gz"
+        binutils="$([[ $ver = */binutils ]] && echo true || echo false)"
+         # space #
+        echo "Downloading zyc-clang version - $ver_number"
+        
+        if ! wget --no-check-certificate "$url" -O /tmp/zyc-clang-"${ver_number}".tar.gz &>/dev/null; then
+            err "Failed downloading toolchain, refer to the README for details"
+            exit 1
+        fi
+
+        if $binutils; then
+            make_opts="CC=clang"
+            host_make_opts="HOSTCC=clang HOSTCXX=clang++"
+        else
+            make_opts="CC=clang LD=ld.lld NM=llvm-nm AR=llvm-ar STRIP=llvm-strip OBJCOPY=llvm-objcopy"
+            make_opts+=" OBJDUMP=llvm-objdump READELF=llvm-readelf LLVM=1 LLVM_IAS=1"
+            host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
+        fi
+        
+        apt install -y --no-install-recommends libgcc-10-dev || exit 127       
+        mkdir -p "$workdir"/"zyc-clang"-"${ver_number}"
+        extract_tarball /tmp/zyc-clang-"${ver_number}".tar.gz "$workdir"/"zyc-clang"-"${ver_number}"
+        cd "$workdir"/"zyc-clang"-"${ver_number}"
+        ls -lah
+        zyc_path="$(pwd)"
+        cd "$workdir"/"$kernel_path" || exit 127
+        
+        export PATH="$zyc_path/bin:${PATH}"
+        export CROSS_COMPILE="aarch64-linux-gnu-"
+        export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
+        echo "zyc-clang" >> /tmp/clangversion.txt
     elif [[ $compiler = proton-clang/* ]]; then
         ver="${compiler/proton-clang\/}"
         ver_number="${ver/\/binutils}"
-        url="https://github.com/kdrag0n/proton-clang/archive/${ver_number}.tar.gz"
+        url="https://gitlab.com/LeCmnGend/proton-clang"
         binutils="$([[ $ver = */binutils ]] && echo true || echo false)"
-
         # Due to different time in container and the host,
         # disable certificate check
-        echo "Downloading $url"
-        if ! wget --no-check-certificate "$url" -O /tmp/proton-clang-"${ver_number}".tar.gz &>/dev/null; then
+        
+        echo "Downloading $url versi ${ver_number}"
+        if ! git clone -b ${ver_number} --depth=1 --single-branch "$url" "$workdir"/"proton-clang"-"${ver_number}" &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
         fi
@@ -123,10 +201,10 @@ if [[ $arch = "arm64" ]]; then
             make_opts+=" OBJDUMP=llvm-objdump READELF=llvm-readelf LLVM_IAS=1"
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
-
+        
         apt install -y --no-install-recommends libgcc-10-dev || exit 127
-        extract_tarball /tmp/proton-clang-"${ver_number}".tar.gz /
-        cd /proton-clang-"${ver_number}"* || exit 127
+        cd "$workdir"/"proton-clang"-"${ver_number}"
+        ls -lah
         proton_path="$(pwd)"
         cd "$workdir"/"$kernel_path" || exit 127
 
@@ -134,10 +212,79 @@ if [[ $arch = "arm64" ]]; then
         export CLANG_TRIPLE="aarch64-linux-gnu-"
         export CROSS_COMPILE="aarch64-linux-gnu-"
         export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
+        echo "proton-clang" >> /tmp/clangversion.txt
+    elif [[ $compiler = prelude-clang/* ]]; then
+        ver="${compiler/prelude-clang\/}"
+        ver_number="${ver/\/binutils}"
+        url="https://gitlab.com/jjpprrrr/prelude-clang"
+        binutils="$([[ $ver = */binutils ]] && echo true || echo false)"
+        # Due to different time in container and the host,
+        # disable certificate check
+        
+        echo "Downloading $url versi ${ver_number}"
+        if ! git clone -b ${ver_number} --depth=1 --single-branch "$url" "$workdir"/"prelude-clang"-"${ver_number}" &>/dev/null; then
+            err "Failed downloading toolchain, refer to the README for details"
+            exit 1
+        fi
+
+        if $binutils; then
+            make_opts="CC=clang"
+            host_make_opts="HOSTCC=clang HOSTCXX=clang++"
+        else
+            make_opts="CC=clang LD=ld.lld NM=llvm-nm AR=llvm-ar STRIP=llvm-strip OBJCOPY=llvm-objcopy"
+            make_opts+=" OBJDUMP=llvm-objdump READELF=llvm-readelf LLVM_IAS=1"
+            host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
+        fi
+        
+        apt install -y --no-install-recommends libgcc-10-dev || exit 127
+        cd "$workdir"/"prelude-clang"-"${ver_number}"
+        ls -lah
+        prelude_path="$(pwd)"
+        cd "$workdir"/"$kernel_path" || exit 127
+
+        export PATH="$prelude_path/bin:${PATH}"
+        export CLANG_TRIPLE="aarch64-linux-gnu-"
+        export CROSS_COMPILE="aarch64-linux-gnu-"
+        export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
+        echo "prelude-clang" >> /tmp/clangversion.txt
+    elif [[ $compiler = yuki-clang/* ]]; then
+        ver="${compiler/yuki-clang\/}"
+        ver_number="${ver/\/binutils}"
+        url="https://gitlab.com/TheXPerienceProject/yuki-clang-new"
+        binutils="$([[ $ver = */binutils ]] && echo true || echo false)"
+        # Due to different time in container and the host,
+        # disable certificate check
+        
+        echo "Downloading $url versi ${ver_number}"
+        if ! git clone -b ${ver_number} --depth=1 --single-branch "$url" "$workdir"/"yuki-clang"-"${ver_number}" &>/dev/null; then
+            err "Failed downloading toolchain, refer to the README for details"
+            exit 1
+        fi
+
+        if $binutils; then
+            make_opts="CC=clang"
+            host_make_opts="HOSTCC=clang HOSTCXX=clang++"
+        else
+            make_opts="CC=clang LD=ld.lld NM=llvm-nm AR=llvm-ar STRIP=llvm-strip OBJCOPY=llvm-objcopy"
+            make_opts+=" OBJDUMP=llvm-objdump READELF=llvm-readelf LLVM_IAS=1"
+            host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
+        fi
+        
+        apt install -y --no-install-recommends libgcc-10-dev || exit 127
+        cd "$workdir"/"yuki-clang"-"${ver_number}"
+        ls -lah
+        yuki_path="$(pwd)"
+        cd "$workdir"/"$kernel_path" || exit 127
+
+        export PATH="$yuki_path/bin:${PATH}"
+        export CLANG_TRIPLE="aarch64-linux-gnu-"
+        export CROSS_COMPILE="aarch64-linux-gnu-"
+        export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
+        echo "yuki-clang" >> /tmp/clangversion.txt
     elif [[ $compiler = aosp-clang/* ]]; then
         ver="${compiler/aosp-clang\/}"
         ver_number="${ver/\/binutils}"
-        url="https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${ver_number}.tar.gz"
+        url="https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/${ver_number}.tar.gz"
         binutils="$([[ $ver = */binutils ]] && echo true || echo false)"
 
         echo "Downloading $url"
@@ -145,19 +292,19 @@ if [[ $arch = "arm64" ]]; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
         fi
-        url="https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/heads/master.tar.gz"
+        url="https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/heads/master-kernel-build-2021.tar.gz"
         echo "Downloading $url"
         if ! wget --no-check-certificate "$url" -O /tmp/aosp-gcc-arm64.tar.gz &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
         fi
-        url="https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/heads/master.tar.gz"
+        url="https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/heads/master-kernel-build-2021.tar.gz"
         echo "Downloading $url"
         if ! wget --no-check-certificate "$url" -O /tmp/aosp-gcc-arm.tar.gz &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
         fi
-        url="https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8/+archive/refs/heads/master.tar.gz"
+        url="https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8/+archive/refs/heads/master-kernel-build-2021.tar.gz"
         echo "Downloading $url"
         if ! wget --no-check-certificate "$url" -O /tmp/aosp-gcc-host.tar.gz &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
@@ -182,13 +329,14 @@ if [[ $arch = "arm64" ]]; then
             make_opts+=" OBJDUMP=llvm-objdump READELF=llvm-readelf LLVM_IAS=1"
             host_make_opts="HOSTCC=clang HOSTCXX=clang++ HOSTLD=ld.lld HOSTAR=llvm-ar"
         fi
-
+        
         apt install -y --no-install-recommends libgcc-10-dev || exit 127
 
         export PATH="/aosp-clang/bin:/aosp-gcc-arm64/bin:/aosp-gcc-arm/bin:/aosp-gcc-host/bin:$PATH"
         export CLANG_TRIPLE="aarch64-linux-gnu-"
         export CROSS_COMPILE="aarch64-linux-android-"
         export CROSS_COMPILE_ARM32="arm-linux-androideabi-"
+        echo "aosp-clang" >> /tmp/clangversion.txt
     else
         err "Unsupported toolchain string. refer to the README for more detail"
         exit 100
@@ -197,11 +345,41 @@ else
     err "Currently this action only supports arm64, refer to the README for more detail"
     exit 100
 fi
-
+### Custom ###
+cd "$workdir"/"$kernel_path" || exit 127
+link1="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/input.c"
+link2="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/exec.c"
+link3="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/open.c"
+link4="https://github.com/bianca2190/Kernel-Builder/blob/vayu-13.0/ksu_vayu/read_write.c"
+link5="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/stat.c"
+msg "Menerapkan Nama Kernel ke $kname ..."
+sed -i "s/.*/-$kname/" localversion
+msg "Patching KernelSU..."
+if [ "$addksu" = true ]; then
+    curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s "$verksu" &>/dev/null
+    curl "$link1" >> drivers/input/input.c &>/dev/null
+    curl "$link2" >> fs/exec.c &>/dev/null
+    curl "$link3" >> fs/open.c &>/dev/null
+    curl "$link4" >> fs/read_write.c &>/dev/null
+    curl "$link5" >> fs/stat.c &>/dev/null
+    echo "Perhatian ! sementara hanya mendukung vayu/PocoX3Pro, atau mungkin bisa di device SM8150 silahkan di coba, DWYOR :)"
+fi
+msg "Check installasi KernelSU..."
+if [ -d "KernelSU" ]; then
+    echo "Folder 'KernelSU' ada..."
+else
+    echo "Folder 'KernelSU' tidak ada..."
+fi
+msg "KernelSU sukses terinstall..."
+sleep 5
+msg "Change user & hostname..."
+export KBUILD_BUILD_USER="$kuser"
+export KBUILD_BUILD_HOST="$khost"
+### Custom ###
 cd "$workdir"/"$kernel_path" || exit 127
 start_time="$(date +%s)"
 date="$(date +%d%m%Y-%I%M)"
-tag="$(git branch | sed 's/*\ //g')"
+clang="$(cat /tmp/clangversion.txt)"
 echo "branch/tag: $tag"
 echo "make options:" $arch_opts $make_opts $host_make_opts
 msg "Generating defconfig from \`make $defconfig\`..."
@@ -219,7 +397,7 @@ if ! make O=out $arch_opts $make_opts $host_make_opts -j"$(nproc --all)"; then
 fi
 set_output elapsed_time "$(echo "$(date +%s)"-"$start_time" | bc)"
 msg "Packaging the kernel..."
-zip_filename="${name}-${tag}-${date}.zip"
+zip_filename="${name}-${tag}-${clang}-${date}.zip"
 if [[ -e "$workdir"/"$zipper_path" ]]; then
     cp out/arch/"$arch"/boot/"$image" "$workdir"/"$zipper_path"/"$image"
 
@@ -228,7 +406,7 @@ if [[ -e "$workdir"/"$zipper_path" ]]; then
     fi
 
     if [ "$dtb" = true ]; then
-        cp out/arch/"$arch"/boot/dtb "$workdir"/"$zipper_path"/dtb
+        cp out/arch/"$arch"/boot/dtb.img "$workdir"/"$zipper_path"/dtb.img
     fi
 
     cd "$workdir"/"$zipper_path" || exit 127
@@ -246,7 +424,7 @@ else
     fi
 
     if [ "$dtb" = true ]; then
-        set_output dtb out/arch/"$arch"/boot/dtb
+        set_output dtb out/arch/"$arch"/boot/dtb.img
     fi
 
     exit 0
