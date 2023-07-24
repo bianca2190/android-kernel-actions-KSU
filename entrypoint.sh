@@ -284,7 +284,7 @@ cd "$workdir"/"$kernel_path" || exit 127
 link1="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/input.c"
 link2="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/exec.c"
 link3="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/open.c"
-link4="https://github.com/bianca2190/Kernel-Builder/blob/vayu-13.0/ksu_vayu/read_write.c"
+link4="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/read_write.c"
 link5="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/stat.c"
 msg "Menerapkan Nama Kernel ke $kname ..."
 sed -i "s/.*/-$kname/" localversion
