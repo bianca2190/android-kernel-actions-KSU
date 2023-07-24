@@ -353,7 +353,18 @@ link3="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu
 link4="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/read_write.c"
 link5="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/stat.c"
 msg "Menerapkan Nama Kernel ke $kname ..."
-sed -i "s/.*/-$kname/" localversion
+kpath1="arch/${arch}/configs/$defconfig"
+kpath2="localversion"
+if sed -i "s/CONFIG_LOCALVERSION=\"-.*\"/CONFIG_LOCALVERSION=\"-${kname}\"/g" "$kpath1"; then
+    echo "File ditemukan dan teks berhasil diubah: $kpath1"
+else
+    echo "File tidak ditemukan: $kpath1"
+fi
+if sed -i "s/.*/-${kname}/" "$kpath2"; then
+    echo "File ditemukan dan teks berhasil diubah: $kpath2"
+else
+    echo "File tidak ditemukan: $kpath2"
+fi
 msg "Mengunduh & Patching KernelSU..."
 if [ "$addksu" = true ]; then
     curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s "$verksu"
