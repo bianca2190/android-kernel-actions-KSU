@@ -23,6 +23,24 @@ inputs:
   dtb:
     description: need dtb or not
     required: true
+  addksu:
+    description: need addksu or not
+    required: true
+  verksu:
+    description: need verksu or not
+    required: true
+  kuser:
+    description: need kuser or not
+    required: true
+  khost:
+    description: need khost or not
+    required: true
+  kname:
+    description: need kname or not
+    required: true
+  tag:
+    description: need tag or not
+    required: true
 outputs:
   outfile:
     description: Zip file generated from build
@@ -42,3 +60,9 @@ runs:
     - ${{ inputs.image }}
     - ${{ inputs.dtbo }}
     - ${{ inputs.dtb }}
+    - ${{ inputs.addksu }}
+    - ${{ inputs.verksu }}
+    - ${{ inputs.kuser }}
+    - ${{ inputs.khost }}
+    - ${{ inputs.kname }}
+    - ${{ inputs.tag }}
