@@ -354,14 +354,14 @@ link4="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu
 link5="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/stat.c"
 msg "Menerapkan Nama Kernel ke $kname ..."
 sed -i "s/.*/-$kname/" localversion
-msg "Patching KernelSU..."
+msg "Mengunduh & Patching KernelSU..."
 if [ "$addksu" = true ]; then
-    curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s "$verksu" &>/dev/null
-    curl "$link1" >> drivers/input/input.c &>/dev/null
-    curl "$link2" >> fs/exec.c &>/dev/null
-    curl "$link3" >> fs/open.c &>/dev/null
-    curl "$link4" >> fs/read_write.c &>/dev/null
-    curl "$link5" >> fs/stat.c &>/dev/null
+    curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s "$verksu"
+    wget "$link1" -O drivers/input/input.c &>/dev/null
+    wget "$link2" -O fs/exec.c &>/dev/null
+    wget "$link3" -O fs/open.c &>/dev/null
+    wget "$link4" -O fs/read_write.c &>/dev/null
+    wget "$link5" -O fs/stat.c &>/dev/null
     echo "Perhatian ! sementara hanya mendukung vayu/PocoX3Pro, atau mungkin bisa di device SM8150 silahkan di coba, DWYOR :)"
 fi
 msg "Check installasi KernelSU..."
