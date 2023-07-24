@@ -304,7 +304,7 @@ if [[ $arch = "arm64" ]]; then
             err "Failed downloading toolchain, refer to the README for details"
             exit 1
         fi
-        url="https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8/+archive/refs/heads/master.tar.gz"
+        url="https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8/+archive/refs/heads/master-kernel-build-2021.tar.gz"
         echo "Downloading $url"
         if ! wget --no-check-certificate "$url" -O /tmp/aosp-gcc-host.tar.gz &>/dev/null; then
             err "Failed downloading toolchain, refer to the README for details"
@@ -350,7 +350,7 @@ cd "$workdir"/"$kernel_path" || exit 127
 link1="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/input.c"
 link2="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/exec.c"
 link3="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/open.c"
-link4="https://github.com/bianca2190/Kernel-Builder/blob/vayu-13.0/ksu_vayu/read_write.c"
+link4="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/read_write.c"
 link5="https://raw.githubusercontent.com/bianca2190/Kernel-Builder/vayu-13.0/ksu_vayu/stat.c"
 msg "Menerapkan Nama Kernel ke $kname ..."
 sed -i "s/.*/-$kname/" localversion
